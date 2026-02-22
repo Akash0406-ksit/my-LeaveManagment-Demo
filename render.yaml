@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: leave-management-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "4000"
+      - key: FIREBASE_DATABASE_URL
+        value: "https://my-fullstack-demo-c6922-default-rtdb.firebaseio.com"
+      - key: FIREBASE_SERVICE_ACCOUNT_PATH
+        value: "./serviceAccountKey.json"

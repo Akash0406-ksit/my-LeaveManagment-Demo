@@ -17,6 +17,15 @@ const LEAVE_TYPES = [
 ];
 
 const API_TIMEOUT_MS = 20000;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+
+const resolveApiPath = (path) => {
+  if (!path) return API_BASE;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const normalized = path.startsWith("/api") ? path.slice(4) : path;
+  if (!normalized) return API_BASE;
+  return `${API_BASE}${normalized.startsWith("/") ? "" : "/"}${normalized}`;
+};
 
 async function api(path, options = {}) {
   const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
@@ -28,7 +37,7 @@ async function api(path, options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   try {
-    const res = await fetch(path, { ...options, headers, signal: controller.signal });
+    const res = await fetch(resolveApiPath(path), { ...options, headers, signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || res.statusText || "Request failed");
@@ -895,7 +904,7 @@ function App() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const token = await cred.user.getIdToken();
-      await fetch("/api/register-user", {
+      await fetch(resolveApiPath("/api/register-user"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
